@@ -1,5 +1,6 @@
 mod vec3;
 mod ray;
+mod aabb;
 mod camera;
 mod materials;
 mod hittable_objects;

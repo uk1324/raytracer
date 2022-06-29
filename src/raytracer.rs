@@ -1,3 +1,4 @@
+use std::time::Instant;
 use std::{fs::File, rc::Rc};
 use std::io::prelude::*;
 use std::path::Path;
@@ -14,7 +15,7 @@ fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
     let ground_material: Rc<dyn Material> = Rc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
-    world.objects.push(Box::new(Sphere::new(&Vec3::new(0.0,-1000.0,0.0), 1000.0, ground_material)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(0.0,-1000.0,0.0), 1000.0, ground_material)));
 
     for a in -11..11 {
         for b in -11..11 {
@@ -33,20 +34,20 @@ fn random_scene() -> HittableList {
                     } else {
                         Rc::new(Dielectric::new(1.5))
                     };
-                world.objects.push(Box::new(Sphere::new(&center, 0.2, sphere_material)));
+                world.objects.push(Rc::new(Sphere::new(&center, 0.2, sphere_material)));
             }
         }
     }
 
     // Could juse use the same name for all materials
     let material1: Rc<dyn Material> = Rc::new(Dielectric::new(1.5));
-    world.objects.push(Box::new(Sphere::new(&Vec3::new(0.0, 1.0, 0.0), 1.0, material1)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(0.0, 1.0, 0.0), 1.0, material1)));
 
     let material2: Rc<dyn Material> = Rc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1)));
-    world.objects.push(Box::new(Sphere::new(&Vec3::new(-4.0, 1.0, 0.0), 1.0, material2)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(-4.0, 1.0, 0.0), 1.0, material2)));
 
     let material3: Rc<dyn Material> = Rc::new(Metal::new(&Vec3::new(0.7, 0.5, 0.5), 0.0));
-    world.objects.push(Box::new(Sphere::new(&Vec3::new(4.0, 1.0, 0.0), 1.0, material3)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(4.0, 1.0, 0.0), 1.0, material3)));
 
     world
 }
@@ -108,10 +109,10 @@ pub fn run_raytracer(out_path: &str) {
     let material_left = Rc::new(Dielectric::new(1.5));
     let material_right = Rc::new(Metal::new(&Vec3::new(0.8, 0.6, 0.2), 0.0));
 
-    world.objects.push(Box::new(Sphere::new(&Vec3::new( 0.0, -100.5, -1.0), 100.0, material_ground)));
-    world.objects.push(Box::new(Sphere::new(&Vec3::new( 0.0, 0.0, -1.0),  0.5, material_center)));
-    world.objects.push(Box::new(Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), 0.5, material_left)));
-    world.objects.push(Box::new(Sphere::new(&Vec3::new( 1.0,  0.0, -1.0),0.5, material_right)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new( 0.0, -100.5, -1.0), 100.0, material_ground)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new( 0.0, 0.0, -1.0),  0.5, material_center)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), 0.5, material_left)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new( 1.0,  0.0, -1.0),0.5, material_right)));
 
     let look_from = Vec3::new(13.0, 2.0, 3.0);
     let look_at = Vec3::new(0.0, 0.0, 0.0);
@@ -121,9 +122,11 @@ pub fn run_raytracer(out_path: &str) {
 
     let camera = Camera::new(look_from, look_at, up, f32::to_radians(20.0), aspect_ratio, aperture, dist_to_focus);
 
-    let hittable: Box<dyn Hittable> = Box::new(random_scene());
+    let hittable: Box<dyn Hittable> = Box::new(BhvNode::from_hittable_list(&random_scene()));
+    // let hittable: Box<dyn Hittable> = Box::new(random_scene());
 
     file.write_fmt(format_args!("P3\n{} {}\n255\n", image_width, image_height)).unwrap();
+    let start = Instant::now();
 
     for y in (0..image_height).rev() {
         println!("{:.2}%", (1.0 - ((y as f32) / (image_height as f32))) * 100.0);
@@ -139,5 +142,6 @@ pub fn run_raytracer(out_path: &str) {
             write_color(&mut file, color, samples_per_pixel);
         }
     }
-    println!("done");
+    println!("took {}ms", start.elapsed().as_millis());
+    println!("hits: {} misses: {}", unsafe { bvh_hits }, unsafe { bvh_misses });
 }

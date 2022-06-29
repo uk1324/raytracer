@@ -1,6 +1,6 @@
 use rand::Rng;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -126,5 +126,17 @@ impl std::ops::Neg for Vec3 {
     type Output = Self;
     fn neg(self) -> Self {
         Self{ x: -self.x, y: - self.y, z: -self.z }
+    }
+}
+
+impl std::ops::Index<usize> for Vec3 {
+    type Output = f32;
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => panic!("index out of range")
+        }
     }
 }

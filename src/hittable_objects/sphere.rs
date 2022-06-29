@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use crate::aabb::Aabb;
 use crate::hittable_objects::{Hittable, HitRecord};
 use crate::materials::Material;
 use crate::vec3::Vec3;
@@ -61,5 +62,11 @@ impl Hittable for Sphere {
         let outward_normal = (point - self.center) / self.radius;
         
         Some(HitRecord::new(point, ray, outward_normal, root, &self.material))
+    }
+
+    fn bounding_box(&self) -> Option<Aabb> {
+        Some(Aabb::new(
+            self.center - Vec3::new_all(self.radius), 
+            self.center + Vec3::new_all(self.radius)))
     }
 }

@@ -1,10 +1,11 @@
 use crate::vec3::Vec3;
 use crate::ray::Ray;
+use crate::aabb::Aabb;
 use crate::materials::Material;
 use std::option::Option;
 use std::rc::Rc;
 
-#[derive(Clone)]
+// #[derive(Clone)]
 pub struct HitRecord {
     pub point: Vec3,
     pub normal: Vec3,
@@ -31,4 +32,6 @@ impl HitRecord {
 
 pub trait Hittable {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
+    // Optional because for example infinite planes don't have an AABB
+    fn bounding_box(&self) -> Option<Aabb>;
 }

@@ -6,3 +6,6 @@ pub use sphere::*;
 
 mod hittable_list;
 pub use hittable_list::*;
+
+mod bvh_node;
+pub use bvh_node::*;
