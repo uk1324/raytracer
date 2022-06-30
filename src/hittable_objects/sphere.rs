@@ -1,8 +1,10 @@
+use std::f32::consts::{PI, TAU /* = 2 * PI */};
 use std::rc::Rc;
 
 use crate::aabb::Aabb;
 use crate::hittable_objects::{Hittable, HitRecord};
 use crate::materials::Material;
+use crate::vec2::Vec2;
 use crate::vec3::Vec3;
 use crate::ray::Ray;
 
@@ -12,9 +14,39 @@ pub struct Sphere {
     pub material: Rc<dyn Material>
 }
 
+/*
+The parametric equation for a sphere is 
+y = cos(theta)
+x = cos(phi) * sin(theta)
+z = sin(phi) * sin(theta)
+where phi is the angle in range <0, TAU> around the y axis
+and theta is the angle in range <0, PI> between [0, -1, 0] and [0, 1, 0]
+
+y = cos(theta) becuase it describes the x position of the half circle between the up and down vectors.
+sin(theta) could be thought of as a line parallel to the xy plane going straight from the center of the sphere.
+
+x = cos(phi) * sin(theta) becuase cos(phi) describes the x position on the circle that lies on the xy plane scaled by sin(theta)
+sin(phi) describes the position y on the circle and it is also scaled by sin(theta)
+
+This raytracer uses a different coorinate system so
+y = -cos(theta)
+x = -cos(phi) * sin(theta)
+z = sin(phi) * sin(theta)
+*/
+
 impl Sphere {
     pub fn new(center: &Vec3, radius: f32, material: Rc<dyn Material>) -> Self {
         Sphere{ center: *center, radius, material }
+    }
+
+    fn texture_coord(point_on_unit_sphere_centered_at_origin: Vec3) -> Vec2 {
+        let p = &point_on_unit_sphere_centered_at_origin;
+
+        let theta = f32::acos(-p.y);
+        // atan can be used becuase x and z are both scaled by sin(theta)
+        let phi = f32::atan2(-p.z, p.x) + PI;
+
+        Vec2::new(phi / (TAU), theta / PI)
     }
 }
 
@@ -61,7 +93,9 @@ impl Hittable for Sphere {
         // Normalizing it by dividing by radius.
         let outward_normal = (point - self.center) / self.radius;
         
-        Some(HitRecord::new(point, ray, outward_normal, root, &self.material))
+        let uv = Self::texture_coord(outward_normal);
+
+        Some(HitRecord::new(point, ray, outward_normal, root, uv, &self.material))
     }
 
     fn bounding_box(&self) -> Option<Aabb> {

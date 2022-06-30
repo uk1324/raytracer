@@ -6,27 +6,35 @@ use std::path::Path;
 use crate::vec3::Vec3;
 use crate::ray::Ray;
 use crate::camera::Camera;
-use crate::{materials::*};
+use crate::materials::*;
 use crate::hittable_objects::*;
+use crate::textures::*;
 
 use rand::Rng;
 
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
-    let ground_material: Rc<dyn Material> = Rc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
+    // let ground_material: Rc<dyn Material> = Rc::new(Lambertian::from_color(Vec3::new(0.5, 0.5, 0.5)));
+    let ground_material: Rc<dyn Material> = Rc::new(Lambertian::new(Rc::new(CheckerTexture::new(
+        Rc::new(SolidColor::new(Vec3::new(0.2, 0.3, 0.1))),
+        Rc::new(SolidColor::new(Vec3::new(0.9, 0.9, 0.9)))
+    ))));
     world.objects.push(Rc::new(Sphere::new(&Vec3::new(0.0,-1000.0,0.0), 1000.0, ground_material)));
 
     for a in -11..11 {
         for b in -11..11 {
             let choose_material: f32 = rand::thread_rng().gen();
-            let center = Vec3::new((a as f32) + 0.9 * rand::thread_rng().gen::<f32>(), 0.2, b as f32 + 0.9 * rand::thread_rng().gen::<f32>());
+            let center = Vec3::new(
+                (a as f32) + 0.9 * rand::thread_rng().gen::<f32>(), 
+                0.2, 
+                b as f32 + 0.9 * rand::thread_rng().gen::<f32>());
 
             if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 let sphere_material: Rc<dyn Material> =
                     if choose_material < 0.8 {
                         let albedo = Vec3::new_random() * Vec3::new_random();
-                        Rc::new(Lambertian::new(albedo))
+                        Rc::new(Lambertian::from_color(albedo))
                     } else if choose_material < 0.95 {
                         let albedo = Vec3::new_random_in_range(0.5, 1.0);
                         let fuzz = rand::thread_rng().gen_range(0.0..0.5);
@@ -39,17 +47,47 @@ fn random_scene() -> HittableList {
         }
     }
 
-    // Could juse use the same name for all materials
-    let material1: Rc<dyn Material> = Rc::new(Dielectric::new(1.5));
-    world.objects.push(Rc::new(Sphere::new(&Vec3::new(0.0, 1.0, 0.0), 1.0, material1)));
+    let material: Rc<dyn Material> = Rc::new(Dielectric::new(1.5));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(0.0, 1.0, 0.0), 1.0, material)));
 
-    let material2: Rc<dyn Material> = Rc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1)));
-    world.objects.push(Rc::new(Sphere::new(&Vec3::new(-4.0, 1.0, 0.0), 1.0, material2)));
+    let material: Rc<dyn Material> = Rc::new(Lambertian::from_color(Vec3::new(0.4, 0.2, 0.1)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(-4.0, 1.0, 0.0), 1.0, material)));
 
-    let material3: Rc<dyn Material> = Rc::new(Metal::new(&Vec3::new(0.7, 0.5, 0.5), 0.0));
-    world.objects.push(Rc::new(Sphere::new(&Vec3::new(4.0, 1.0, 0.0), 1.0, material3)));
+    let material: Rc<dyn Material> = Rc::new(Metal::new(&Vec3::new(0.7, 0.5, 0.5), 0.0));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(4.0, 1.0, 0.0), 1.0, material)));
 
     world
+}
+
+fn simple_scene() -> HittableList {
+    let mut world= HittableList::new();
+
+    let material_ground = Rc::new(Lambertian::from_color(Vec3::new(0.8, 0.8, 0.0)));
+    let material_center = Rc::new(Lambertian::from_color(Vec3::new(0.1, 0.2, 0.5)));
+    let material_left = Rc::new(Dielectric::new(1.5));
+    let material_right = Rc::new(Metal::new(&Vec3::new(0.8, 0.6, 0.2), 0.0));
+
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new( 0.0, -100.5, -1.0), 100.0, material_ground)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new( 0.0, 0.0, -1.0),  0.5, material_center)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), 0.5, material_left)));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new( 1.0,  0.0, -1.0),0.5, material_right)));
+    world
+}
+
+fn noise_scene() -> HittableList {
+    let mut world = HittableList::new();
+
+    let material: Rc<dyn Material> = Rc::new(Lambertian::new(Rc::new(NoiseTexture::new())));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(0.0,-1000.0,0.0), 1000.0, material.clone())));
+    world.objects.push(Rc::new(Sphere::new(&Vec3::new(0.0, 1.0, 0.0), 1.0, material)));
+
+    world
+}
+
+fn earth_sphere() -> Sphere {
+    let earth_texture =  ImageTexture::from_file(Path::new("earthmap.jpg"));
+    let earth_material = Rc::new(Lambertian::new(Rc::new(earth_texture)));
+    Sphere::new(&Vec3::new(0.0, 0.0, 0.0), 2.0, earth_material)
 }
 
 fn write_color(file: &mut File, color: Vec3, samples_per_pixel: i32) {
@@ -97,22 +135,10 @@ pub fn run_raytracer(out_path: &str) {
     };
 
     let aspect_ratio: f32 = 16.0 / 9.0;
-    let image_width: i32= 200;
+    let image_width: i32= 400;
     let image_height: i32 = ((image_width as f32) / aspect_ratio) as i32;
-    let samples_per_pixel = 1;
+    let samples_per_pixel = 100;
     let max_bounces: i32 = 50;
-
-    let mut world= HittableList::new();
-
-    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0)));
-    let material_center = Rc::new(Lambertian::new(Vec3::new(0.1, 0.2, 0.5)));
-    let material_left = Rc::new(Dielectric::new(1.5));
-    let material_right = Rc::new(Metal::new(&Vec3::new(0.8, 0.6, 0.2), 0.0));
-
-    world.objects.push(Rc::new(Sphere::new(&Vec3::new( 0.0, -100.5, -1.0), 100.0, material_ground)));
-    world.objects.push(Rc::new(Sphere::new(&Vec3::new( 0.0, 0.0, -1.0),  0.5, material_center)));
-    world.objects.push(Rc::new(Sphere::new(&Vec3::new(-1.0, 0.0, -1.0), 0.5, material_left)));
-    world.objects.push(Rc::new(Sphere::new(&Vec3::new( 1.0,  0.0, -1.0),0.5, material_right)));
 
     let look_from = Vec3::new(13.0, 2.0, 3.0);
     let look_at = Vec3::new(0.0, 0.0, 0.0);
@@ -120,10 +146,16 @@ pub fn run_raytracer(out_path: &str) {
     let dist_to_focus = 10.0;
     let aperture = 0.1;
 
-    let camera = Camera::new(look_from, look_at, up, f32::to_radians(20.0), aspect_ratio, aperture, dist_to_focus);
+    let camera = Camera::new(
+        look_from, 
+        look_at, 
+        up, 
+        f32::to_radians(20.0), 
+        aspect_ratio, 
+        aperture, 
+        dist_to_focus);
 
-    let hittable: Box<dyn Hittable> = Box::new(BhvNode::from_hittable_list(&random_scene()));
-    // let hittable: Box<dyn Hittable> = Box::new(random_scene());
+    let hittable: Box<dyn Hittable> = Box::new(earth_sphere());
 
     file.write_fmt(format_args!("P3\n{} {}\n255\n", image_width, image_height)).unwrap();
     let start = Instant::now();
@@ -143,5 +175,5 @@ pub fn run_raytracer(out_path: &str) {
         }
     }
     println!("took {}ms", start.elapsed().as_millis());
-    println!("hits: {} misses: {}", unsafe { bvh_hits }, unsafe { bvh_misses });
+    println!("BVH hits: {} BVH misses: {}", unsafe { BVH_HITS }, unsafe { BVH_MISSES });
 }

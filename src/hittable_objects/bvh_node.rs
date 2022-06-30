@@ -65,17 +65,17 @@ impl BhvNode {
     }
 }
 
-pub static mut bvh_hits: i32 = 0;
-pub static mut bvh_misses: i32 = 0;
+pub static mut BVH_HITS: i32 = 0;
+pub static mut BVH_MISSES: i32 = 0;
 
 impl Hittable for BhvNode {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         
         if !self.aabb.hit(ray, t_min, t_max) {
-            unsafe { bvh_misses += 1 };
+            unsafe { BVH_MISSES += 1 };
             return None
         } else {
-            unsafe { bvh_hits += 1 };
+            unsafe { BVH_HITS += 1 };
         }
 
         let hit_left = self.left.hit(ray, t_min, t_max);
