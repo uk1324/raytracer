@@ -14,6 +14,6 @@ impl NoiseTexture {
 
 impl Texture for NoiseTexture {
     fn color(&self, _: Vec2, hit_point: Vec3) -> Vec3 {
-        self.perlin.get(hit_point) * Vec3::new_all(1.0)
+        self.perlin.get(hit_point) * Vec3::all(1.0)
     }
 }

@@ -7,8 +7,13 @@ pub struct Vec3 {
     pub z: f32
 }
 
+pub const UP: Vec3 = Vec3{ x: 0.0, y: 1.0, z: 0.0};
+
+pub type Color = Vec3;
+pub type Pt3 = Vec3;
+
 impl Vec3 {
-    pub fn new_all(all: f32) -> Vec3 {
+    pub fn all(all: f32) -> Vec3 {
         Vec3{ x: all, y: all, z: all }
     }
 
@@ -22,6 +27,15 @@ impl Vec3 {
 
     pub fn new_random_in_range(min: f32, max: f32) -> Vec3 {
         Vec3{ x: rand::thread_rng().gen_range(min..max), y: rand::thread_rng().gen_range(min..max), z: rand::thread_rng().gen_range(min..max) }
+    }
+
+    pub fn random_unit() -> Self {
+        loop {
+            let point = Vec3::new_random_in_range(-1.0, 1.0);
+            if point.length_squared() < 1.0 {
+                return point.normalized()
+            }
+        }
     }
 
     pub fn apply(&mut self, function: fn(f32) -> f32) -> &Vec3 {

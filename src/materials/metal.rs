@@ -1,5 +1,6 @@
 use crate::materials::{Material, ScatterRecord};
-use crate::vec3::Vec3;
+use crate::vec2::Vec2;
+use crate::vec3::{Vec3, Pt3, Color};
 use crate::ray::Ray;
 use crate::hittable_objects::HitRecord;
 use crate::random::random_point_in_unit_sphere;
@@ -23,5 +24,9 @@ impl Material for Metal {
         } else {
             None
         }
+    }
+
+    fn color_emmited(&self, _: Vec2, _: Pt3) -> Color {
+        Color::all(0.0)
     }
 }

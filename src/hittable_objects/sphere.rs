@@ -35,8 +35,8 @@ z = sin(phi) * sin(theta)
 */
 
 impl Sphere {
-    pub fn new(center: &Vec3, radius: f32, material: Rc<dyn Material>) -> Self {
-        Sphere{ center: *center, radius, material }
+    pub fn new(center: Vec3, radius: f32, material: Rc<dyn Material>) -> Self {
+        Sphere{ center: center, radius, material }
     }
 
     fn texture_coord(point_on_unit_sphere_centered_at_origin: Vec3) -> Vec2 {
@@ -95,12 +95,12 @@ impl Hittable for Sphere {
         
         let uv = Self::texture_coord(outward_normal);
 
-        Some(HitRecord::new(point, ray, outward_normal, root, uv, &self.material))
+        Some(HitRecord::new(point, ray, outward_normal, root, uv, self.material.clone()))
     }
 
     fn bounding_box(&self) -> Option<Aabb> {
         Some(Aabb::new(
-            self.center - Vec3::new_all(self.radius), 
-            self.center + Vec3::new_all(self.radius)))
+            self.center - Vec3::all(self.radius), 
+            self.center + Vec3::all(self.radius)))
     }
 }

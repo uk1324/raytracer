@@ -1,6 +1,7 @@
 use crate::materials::{Material, ScatterRecord};
 use crate::ray::Ray;
-use crate::vec3::Vec3;
+use crate::vec2::Vec2;
+use crate::vec3::{Vec3, Pt3, Color};
 use crate::hittable_objects::HitRecord;
 use rand::Rng;
 
@@ -23,7 +24,7 @@ impl Dielectric {
 
 impl Material for Dielectric {
     fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
-        let attenuation = Vec3::new_all(1.0);
+        let attenuation = Vec3::all(1.0);
         let refraction_ratio = if hit_record.is_front_face { 1.0 / self.index_of_refraction } else { self.index_of_refraction };
 
         let direction = ray.direction.normalized();
@@ -40,5 +41,9 @@ impl Material for Dielectric {
         };
 
         Some(ScatterRecord::new(&Ray::new(hit_record.point, direction), attenuation))
+    }
+
+    fn color_emmited(&self, _: Vec2, _: Pt3) -> Color {
+        Color::all(0.0)
     }
 }

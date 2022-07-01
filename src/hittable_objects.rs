@@ -9,3 +9,6 @@ pub use hittable_list::*;
 
 mod bvh_node;
 pub use bvh_node::*;
+
+mod xy_rect;
+pub use xy_rect::*;

@@ -4,8 +4,8 @@ use crate::materials::{Material, ScatterRecord};
 use crate::ray::Ray;
 use crate::hittable_objects::HitRecord;
 use crate::textures::{Texture, SolidColor};
-use crate::vec3::Vec3;
-use crate::random::random_point_in_hemisphere;
+use crate::vec2::Vec2;
+use crate::vec3::{Vec3, Pt3, Color};
 
 pub struct Lambertian {
     pub albedo: Rc<dyn Texture>
@@ -32,7 +32,8 @@ impl Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, _: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
-        let mut scatter_direction = hit_record.normal + random_point_in_hemisphere(hit_record.normal);
+        let mut scatter_direction = hit_record.normal + Vec3::random_unit();
+
         // TODO: Why?
         if scatter_direction.is_near_zero() {
             scatter_direction = hit_record.normal;
@@ -40,5 +41,9 @@ impl Material for Lambertian {
         Some(ScatterRecord::new(
             &Ray::new(hit_record.point, scatter_direction), 
             self.albedo.color(hit_record.texture_coord, hit_record.point)))
+    }
+
+    fn color_emmited(&self, _: Vec2, _: Pt3) -> Color {
+        Color::all(0.0)
     }
 }
