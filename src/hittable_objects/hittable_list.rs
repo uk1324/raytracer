@@ -11,6 +11,10 @@ impl HittableList {
     pub fn new() -> HittableList {
         HittableList{ objects: Vec::new() }
     }
+
+    pub fn from_vec(objects: Vec<Rc<dyn Hittable>>) -> HittableList {
+        HittableList{ objects }
+    }
 }
 
 impl Hittable for HittableList {

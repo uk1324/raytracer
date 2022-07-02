@@ -9,6 +9,10 @@ impl Vec2 {
         Self{ x, y }
     }
 
+    pub fn all(value: f32) -> Self {
+        Self{ x: value, y: value }
+    }
+
     pub fn applied(&self, function: fn(f32) -> f32) -> Self {
         Self{ x: function(self.x), y: function(self.y) }
     }

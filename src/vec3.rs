@@ -29,13 +29,18 @@ impl Vec3 {
         Vec3{ x: rand::thread_rng().gen_range(min..max), y: rand::thread_rng().gen_range(min..max), z: rand::thread_rng().gen_range(min..max) }
     }
 
-    pub fn random_unit() -> Self {
+
+    pub fn random_in_unit_sphere() -> Self {
         loop {
             let point = Vec3::new_random_in_range(-1.0, 1.0);
             if point.length_squared() < 1.0 {
-                return point.normalized()
+                break point
             }
         }
+    }
+
+    pub fn random_unit() -> Self {
+        Self::random_in_unit_sphere().normalized()
     }
 
     pub fn apply(&mut self, function: fn(f32) -> f32) -> &Vec3 {
@@ -150,6 +155,17 @@ impl std::ops::Index<usize> for Vec3 {
             0 => &self.x,
             1 => &self.y,
             2 => &self.z,
+            _ => panic!("index out of range")
+        }
+    }
+}
+
+impl std::ops::IndexMut<usize> for Vec3 {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
             _ => panic!("index out of range")
         }
     }

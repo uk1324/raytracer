@@ -10,5 +10,17 @@ pub use hittable_list::*;
 mod bvh_node;
 pub use bvh_node::*;
 
-mod xy_rect;
-pub use xy_rect::*;
+mod aa_rect;
+pub use aa_rect::*;
+
+mod aa_box;
+pub use aa_box::*;
+
+mod translate;
+pub use translate::*;
+
+mod rotate_y;
+pub use rotate_y::*;
+
+mod constant_medium;
+pub use constant_medium::*;

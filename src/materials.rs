@@ -12,3 +12,6 @@ pub use dielectric::*;
 
 mod diffuse_light;
 pub use diffuse_light::*;
+
+mod isotropic;
+pub use isotropic::*;

@@ -109,7 +109,6 @@ fn earth_scene() -> Scene {
 }
 
 fn light_scene() -> Scene {
-
     let mut world = HittableList::new();
 
     let texture = Rc::new(Lambertian::new(Rc::new(SolidColor::new(Color::all(0.5)))));
@@ -127,6 +126,106 @@ fn light_scene() -> Scene {
         vertical_fov: 20.0f32.to_radians(), 
         aperture: 0.1,
         background_color: Vec3::all(0.0)
+    }
+}
+
+fn cornell_box() -> Scene {
+    let mut objects: Vec<Rc<dyn Hittable>> = Vec::new();
+
+    let red   = Rc::new(Lambertian::from_color(Color::new(0.65, 0.05, 0.05)));
+    let white = Rc::new(Lambertian::from_color(Color::all(0.73)));
+    let green = Rc::new(Lambertian::from_color(Color::new(0.12, 0.45, 0.15)));
+    let light = Rc::new(DiffuseLight::new(Rc::new(SolidColor::new(Color::all(15.0)))));
+
+    objects.push(Rc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green)));
+    objects.push(Rc::new(YzRect::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+    objects.push(Rc::new(XzRect::new(213.0, 343.0, 227.0, 332.0, 554.0, light)));
+    objects.push(Rc::new(XzRect::new(0.0, 555.0, 0.0, 555.0, 0.0, white.clone())));
+    objects.push(Rc::new(XzRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
+    objects.push(Rc::new(XyRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone())));
+
+
+    // objects.push(Rc::new(AaBox::new(Vec3::new(130.0, 0.0, 65.0), Vec3::new(295.0, 165.0, 230.0), white.clone())));
+    // objects.push(Rc::new(AaBox::new(Vec3::new(265.0, 0.0, 295.0), Vec3::new(430.0, 330.0, 460.0), white.clone())));
+
+    let box1 = Rc::new(AaBox::new(Pt3::new(0.0, 0.0, 0.0), Pt3::new(165.0, 330.0, 165.0), white.clone()));
+    let box1 = Rc::new(RotateY::new(box1, 15.0f32.to_radians()));
+    let box1 = Rc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+    objects.push(box1);
+    
+    let box2 = Rc::new(AaBox::new(Pt3::new(0.0, 0.0, 0.0), Pt3::all(165.0), white.clone()));
+    let box2 = Rc::new(RotateY::new(box2, -18.0f32.to_radians()));
+    let box2 = Rc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+    objects.push(box2);
+    
+    Scene { 
+        objects: Box::new(HittableList::from_vec(objects)),
+        // objects: Box::new(BhvNode::new(&objects, 0, objects.len())),
+        look_from: Vec3::new(278.0, 278.0, -800.0), 
+        look_at: Vec3::new(278.0, 278.0, 0.0),
+        vertical_fov: 40.0f32.to_radians(), 
+        aperture: 0.1,
+        background_color: Vec3::all(0.0)
+    }
+}
+
+fn test_scene() -> Scene {
+    let mut boxes1: Vec<Rc<dyn Hittable>> = Vec::new();
+    let ground = Rc::new(Lambertian::from_color(Color::new(0.48, 0.83, 0.53)));
+
+    const BOXES_PER_SIDE: i32 = 20;
+    for i in 0..BOXES_PER_SIDE {
+        for j in 0..BOXES_PER_SIDE {
+            let (i, j) = (i as f32, j as f32);
+            let w = 100.0;
+            let x0 = -1000.0 + i * w;
+            let z0 = -1000.0 + j * w;
+            let y0 = 0.0;
+            let x1 = x0 + w;
+            let y1 = rand::thread_rng().gen_range(1.0..101.0);
+            let z1 = z0 + w;
+
+            boxes1.push(Rc::new(AaBox::new(Pt3::new(x0,y0,z0), Pt3::new(x1, y1, z1), ground.clone())));
+        }    
+    }
+
+    let mut objects: Vec<Rc<dyn Hittable>> = Vec::new();
+
+    objects.push(Rc::new(BhvNode::new(&boxes1, 0, boxes1.len())));
+
+    let light = Rc::new(DiffuseLight::new(Rc::new(SolidColor::new(Color::all(7.0)))));
+    objects.push(Rc::new(XzRect::new(123.0, 423.0, 147.0, 412.0, 554.0, light)));
+
+    objects.push(Rc::new(Sphere::new(Pt3::new(260.0, 150.0, 45.0), 50.0, Rc::new(Dielectric::new(0.5)))));
+    objects.push(Rc::new(Sphere::new(Pt3::new(0.0, 150.0, 145.0), 50.0, Rc::new(Metal::new(&Color::new(0.8, 0.8, 0.9), 1.0)))));
+
+    let emat = Rc::new(Lambertian::new(Rc::new(ImageTexture::from_file(Path::new("earthmap.jpg")))));
+    objects.push(Rc::new(Sphere::new(Pt3::new(400.0,200.0,400.0), 100.0, emat)));
+    // auto pertext = make_shared<noise_texture>(0.1);
+    // objects.add(make_shared<sphere>(point3(220,280,300), 80, make_shared<lambertian>(pertext)));
+
+    let mut balls: Vec<Rc<dyn Hittable>> = Vec::new();
+    let white = Rc::new(Lambertian::from_color(Color::new(0.73, 0.73, 0.73)));
+    const BALL_COUNT: i32 = 1000;
+    for i in 0..BALL_COUNT {
+        balls.push(Rc::new(Sphere::new(Pt3::new_random_in_range(0.0,165.0), 10.0, white.clone())));
+    }
+
+    objects.push(Rc::new(Translate::new(
+        Rc::new(RotateY::new(
+            Rc::new(BhvNode::new(&balls, 0, balls.len())), 15.0), 
+        ), 
+            Vec3::new(-100.0, 270.0, 395.0))
+    ));
+
+    Scene { 
+        objects: Box::new(BhvNode::new(&objects, 0, objects.len())),
+        // objects: Box::new(boxes1),
+        look_from: Vec3::new(478.0, 278.0, -600.0), 
+        look_at: Vec3::new(278.0, 278.0, 0.0),
+        vertical_fov: 40.0f32.to_radians(), 
+        aperture: 0.1,
+        background_color: Vec3::all(0.8)
     }
 }
 
@@ -165,6 +264,14 @@ fn ray_color(ray: &Ray, hittable: &Box<dyn Hittable>, background_color: Color, b
     }
 }
 
+fn u(a: &Scene) {
+
+}
+
+fn v(a: &Camera) {
+
+}
+
 pub fn run_raytracer(out_path: &str) {
     let path = Path::new(out_path);
     
@@ -173,13 +280,14 @@ pub fn run_raytracer(out_path: &str) {
         Ok(file) => file
     };
 
-    let aspect_ratio: f32 = 16.0 / 9.0;
-    let image_width: i32 = 400;
+    // let aspect_ratio: f32 = 16.0 / 9.0;
+    let aspect_ratio: f32 = 1.0;
+    let image_width: i32 = 600;
     let image_height: i32 = ((image_width as f32) / aspect_ratio) as i32;
-    let samples_per_pixel = 400;
+    let samples_per_pixel = 10;
     let max_bounces: i32 = 50;
 
-    let scene = light_scene();
+    let scene = test_scene();
 
     let camera = Camera::new(
         scene.look_from, 
