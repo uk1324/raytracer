@@ -3,6 +3,7 @@ use crate::vec3::Vec3;
 #[derive(Debug, Clone, Copy)]
 pub struct Ray {
     pub origin: Vec3,
+    // Doesn't have to be normalized.
     pub direction: Vec3
 }
 

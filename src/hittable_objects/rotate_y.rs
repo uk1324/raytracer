@@ -1,18 +1,18 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{aabb::Aabb, vec3::{Pt3, Vec3}, ray::Ray};
 
 use super::{Hittable, HitRecord};
 
 pub struct RotateY {
-    hittable: Rc<dyn Hittable>,
+    hittable: Arc<dyn Hittable>,
     sin: f32,
     cos: f32,
     aabb: Option<Aabb>
 }
 
 impl RotateY {
-    pub fn new(hittable: Rc<dyn Hittable>, angle: f32) -> Self {
+    pub fn new(hittable: Arc<dyn Hittable>, angle: f32) -> Self {
         let (sin, cos) = angle.sin_cos();
 
         let aabb = match hittable.bounding_box() {

@@ -1,27 +1,24 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{vec3::Pt3, materials::Material, ray::Ray, aabb::Aabb};
 
 use super::{HittableList, XyRect, XzRect, YzRect, Hittable, HitRecord};
 
 pub struct AaBox {
-    // TODO just store the AABB
-    pub min: Pt3,
-    pub max: Pt3,
-    pub sides: HittableList
+    aabb: Aabb,
+    sides: HittableList
 }
 
 impl AaBox {
-    pub fn new(min: Pt3, max: Pt3, material: Rc<dyn Material>) -> Self {
+    pub fn new(min: Pt3, max: Pt3, material: Arc<dyn Material>) -> Self {
         let mut sides = HittableList::new();
-        // sides.objects.push(value)
-        sides.objects.push(Rc::new(XyRect::new(min.x, max.x, min.y, max.y, max.z, material.clone())));
-        sides.objects.push(Rc::new(XyRect::new(min.x, max.x, min.y, max.y, min.z, material.clone())));
-        sides.objects.push(Rc::new(XzRect::new(min.x, max.x, min.z, max.z, max.y, material.clone())));
-        sides.objects.push(Rc::new(XzRect::new(min.x, max.x, min.z, max.z, min.y, material.clone())));
-        sides.objects.push(Rc::new(YzRect::new(min.y, max.y, min.z, max.z, max.x, material.clone())));
-        sides.objects.push(Rc::new(YzRect::new(min.y, max.y, min.z, max.z, min.x, material)));
-        AaBox{ min, max, sides }
+        sides.add(Arc::new(XyRect::new(min.x, max.x, min.y, max.y, max.z, material.clone())));
+        sides.add(Arc::new(XyRect::new(min.x, max.x, min.y, max.y, min.z, material.clone())));
+        sides.add(Arc::new(XzRect::new(min.x, max.x, min.z, max.z, max.y, material.clone())));
+        sides.add(Arc::new(XzRect::new(min.x, max.x, min.z, max.z, min.y, material.clone())));
+        sides.add(Arc::new(YzRect::new(min.y, max.y, min.z, max.z, max.x, material.clone())));
+        sides.add(Arc::new(YzRect::new(min.y, max.y, min.z, max.z, min.x, material)));
+        AaBox{ aabb: Aabb::new(min, max), sides }
     }
 }
 
@@ -31,6 +28,6 @@ impl Hittable for AaBox {
     }
 
     fn bounding_box(&self) -> Option<Aabb> {
-        Some(Aabb::new(self.min, self.max))
+        Some(self.aabb)
     }
 }

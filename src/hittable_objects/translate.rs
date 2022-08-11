@@ -1,16 +1,16 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{vec3::Vec3, aabb::Aabb, ray::Ray};
 
 use super::{Hittable, HitRecord};
 
 pub struct Translate {
-    pub hittable: Rc<dyn Hittable>,
+    pub hittable: Arc<dyn Hittable>,
     pub translation: Vec3
 }
 
 impl Translate {
-    pub fn new(hittable: Rc<dyn Hittable>, translation: Vec3) -> Self {
+    pub fn new(hittable: Arc<dyn Hittable>, translation: Vec3) -> Self {
         Self{ hittable, translation }
     }
 }

@@ -1,16 +1,16 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{vec2::Vec2, vec3::Vec3};
 
 use super::Texture;
 
 pub struct CheckerTexture {
-    pub odd: Rc<dyn Texture>,
-    pub even: Rc<dyn Texture>
+    pub odd: Arc<dyn Texture>,
+    pub even: Arc<dyn Texture>
 }
 
 impl CheckerTexture {
-    pub fn new(odd: Rc<dyn Texture>, even: Rc<dyn Texture>) -> Self {
+    pub fn new(odd: Arc<dyn Texture>, even: Arc<dyn Texture>) -> Self {
         Self{ odd, even }
     }
 }

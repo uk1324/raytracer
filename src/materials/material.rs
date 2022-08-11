@@ -15,7 +15,7 @@ impl ScatterRecord {
     }
 }
 
-pub trait Material {
+pub trait Material where Self: Send + Sync {
     fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord>;
     // There is no way to provide a overridable default implementation.
     fn color_emmited(&self, uv: Vec2, hit_point: Pt3) -> Color;

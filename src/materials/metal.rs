@@ -3,7 +3,6 @@ use crate::vec2::Vec2;
 use crate::vec3::{Vec3, Pt3, Color};
 use crate::ray::Ray;
 use crate::hittable_objects::HitRecord;
-use crate::random::random_point_in_unit_sphere;
 
 pub struct Metal {
     albedo: Vec3,
@@ -20,7 +19,8 @@ impl Material for Metal {
     fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
         let reflected = Vec3::reflect(ray.direction, hit_record.normal);
         if Vec3::dot(reflected, hit_record.normal) > 0.0 {
-            Some(ScatterRecord::new(&Ray::new(hit_record.point, reflected + (self.fuzz * random_point_in_unit_sphere())), self.albedo))
+            let fuzz = self.fuzz * Vec3::random_in_unit_sphere();
+            Some(ScatterRecord::new(&Ray::new(hit_record.point, reflected + fuzz), self.albedo))
         } else {
             None
         }

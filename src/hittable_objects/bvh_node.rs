@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use rand::Rng;
 
@@ -7,17 +7,17 @@ use crate::{aabb::Aabb, ray::Ray};
 use super::{Hittable, HitRecord, HittableList};
 
 pub struct BhvNode {
-    pub left: Rc<dyn Hittable>,
-    pub right: Rc<dyn Hittable>,
+    pub left: Arc<dyn Hittable>,
+    pub right: Arc<dyn Hittable>,
     pub aabb: Aabb
 }
 
 impl BhvNode {
-    pub fn new(src_objects: &Vec<Rc<dyn Hittable>>, start: usize, end: usize) -> BhvNode {
+    pub fn new(src_objects: &Vec<Arc<dyn Hittable>>, start: usize, end: usize) -> BhvNode {
         let mut objects = src_objects.clone();
         
         let axis = rand::thread_rng().gen_range(0..3);
-        let box_compare = |a: &Rc<dyn Hittable>, b: &Rc<dyn Hittable>| {
+        let box_compare = |a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>| {
             let box_a = a.bounding_box();
             let box_b = b.bounding_box();
         
@@ -43,9 +43,9 @@ impl BhvNode {
             let mid = start + object_span / 2;
             objects.split_at_mut(start).1.split_at_mut(object_span).0.sort_by(box_compare);
 
-            let (left, right): (Rc<dyn Hittable>, Rc<dyn Hittable>) = (
-                Rc::new(BhvNode::new(&objects, start, mid)),
-                Rc::new(BhvNode::new(&objects, mid, end))
+            let (left, right): (Arc<dyn Hittable>, Arc<dyn Hittable>) = (
+                Arc::new(BhvNode::new(&objects, start, mid)),
+                Arc::new(BhvNode::new(&objects, mid, end))
             );
             (left, right)
         };  
@@ -65,17 +65,10 @@ impl BhvNode {
     }
 }
 
-pub static mut BVH_HITS: i32 = 0;
-pub static mut BVH_MISSES: i32 = 0;
-
 impl Hittable for BhvNode {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        
         if !self.aabb.hit(ray, t_min, t_max) {
-            unsafe { BVH_MISSES += 1 };
             return None
-        } else {
-            unsafe { BVH_HITS += 1 };
         }
 
         let hit_left = self.left.hit(ray, t_min, t_max);

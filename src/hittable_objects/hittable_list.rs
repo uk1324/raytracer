@@ -1,10 +1,10 @@
-use std::rc::Rc;
+use std::sync::Arc;
 use crate::hittable_objects::{Hittable, HitRecord};
 use crate::ray::Ray;
 use crate::aabb::Aabb;
 
 pub struct HittableList {
-    pub objects: Vec<Rc<dyn Hittable>>
+    pub objects: Vec<Arc<dyn Hittable>>
 }
 
 impl HittableList {
@@ -12,8 +12,13 @@ impl HittableList {
         HittableList{ objects: Vec::new() }
     }
 
-    pub fn from_vec(objects: Vec<Rc<dyn Hittable>>) -> HittableList {
+    pub fn from_vec(objects: Vec<Arc<dyn Hittable>>) -> HittableList {
         HittableList{ objects }
+    }
+
+    // Naming the argument value makes it so the extension doesn't display the name.
+    pub fn add(&mut self, value: Arc<dyn Hittable>) {
+        self.objects.push(value);
     }
 }
 

@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use rand::Rng;
 
@@ -7,13 +7,13 @@ use crate::{materials::Material, ray::Ray, aabb::Aabb, vec3::Vec3, vec2::Vec2};
 use super::{Hittable, HitRecord};
 
 pub struct ConstantMedium {
-    pub boundary: Rc<dyn Hittable>,
-    pub phase_function: Rc<dyn Material>,
+    pub boundary: Arc<dyn Hittable>,
+    pub phase_function: Arc<dyn Material>,
     pub density_inverse_negated: f32
 }
 
 impl ConstantMedium {
-    pub fn new(boundary: Rc<dyn Hittable>, phase_function: Rc<dyn Material>, density: f32) -> Self {
+    pub fn new(boundary: Arc<dyn Hittable>, phase_function: Arc<dyn Material>, density: f32) -> Self {
         Self{ boundary, phase_function, density_inverse_negated: -1.0 / density }
     }
 }

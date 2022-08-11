@@ -1,5 +1,5 @@
 use std::f32::consts::{PI, TAU /* = 2 * PI */};
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::aabb::Aabb;
 use crate::hittable_objects::{Hittable, HitRecord};
@@ -11,7 +11,7 @@ use crate::ray::Ray;
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
-    pub material: Rc<dyn Material>
+    pub material: Arc<dyn Material>
 }
 
 /*
@@ -35,7 +35,7 @@ z = sin(phi) * sin(theta)
 */
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32, material: Rc<dyn Material>) -> Self {
+    pub fn new(center: Vec3, radius: f32, material: Arc<dyn Material>) -> Self {
         Sphere{ center: center, radius, material }
     }
 

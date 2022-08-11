@@ -1,15 +1,15 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::{textures::Texture, ray::Ray, hittable_objects::HitRecord, vec3::{Color, Pt3}, vec2::Vec2};
 
 use super::{Material, ScatterRecord};
 
 pub struct DiffuseLight {
-    pub emit: Rc<dyn Texture>
+    pub emit: Arc<dyn Texture>
 }
 
 impl DiffuseLight {
-    pub fn new(emit: Rc<dyn Texture>) -> Self {
+    pub fn new(emit: Arc<dyn Texture>) -> Self {
         Self { emit }
     }
 }

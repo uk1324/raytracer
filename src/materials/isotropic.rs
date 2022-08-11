@@ -1,15 +1,15 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
-use crate::{textures::Texture, vec3::{Color, Pt3, Vec3}, vec2::Vec2, hittable_objects::HitRecord, ray::Ray, random::random_point_in_unit_sphere};
+use crate::{textures::Texture, vec3::{Color, Pt3, Vec3}, vec2::Vec2, hittable_objects::HitRecord, ray::Ray};
 
 use super::{Material, ScatterRecord};
 
 pub struct Isotropic {
-    albedo: Rc<dyn Texture> 
+    albedo: Arc<dyn Texture> 
 }
 
 impl Isotropic {
-    pub fn new(albedo: Rc<dyn Texture>) -> Self {
+    pub fn new(albedo: Arc<dyn Texture>) -> Self {
         Self { albedo }
     }
 }
