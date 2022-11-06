@@ -1,4 +1,4 @@
-Multithreaded path tracer
+Multithreaded path tracer based on books by Peter Shirley
 
 ![image](cornell.png)
 
